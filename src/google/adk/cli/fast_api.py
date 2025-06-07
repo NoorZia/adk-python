@@ -292,6 +292,10 @@ def get_fast_api_app(
   # initialize Agent Loader
   agent_loader = AgentLoader(agents_dir)
 
+  @app.get("/health")
+  async def health_check():
+    return {"status": "healthy"}
+
   @app.get("/list-apps")
   def list_apps() -> list[str]:
     base_path = Path.cwd() / agents_dir
@@ -942,10 +946,7 @@ def get_fast_api_app(
     BASE_DIR = Path(__file__).parent.resolve()
     ANGULAR_DIST_PATH = BASE_DIR / "browser"
 
-    @app.get("/health")
-    async def health_check():
-      return {"status": "healthy"}
-
+   
     @app.get("/")
     async def redirect_root_to_dev_ui():
       return RedirectResponse("/dev-ui/")
