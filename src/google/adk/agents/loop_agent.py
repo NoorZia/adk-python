@@ -20,6 +20,7 @@ from typing import AsyncGenerator
 from typing import Optional
 
 from typing_extensions import override
+from google.genai import types
 
 from ..agents.invocation_context import InvocationContext
 from ..events.event import Event
@@ -50,6 +51,24 @@ class LoopAgent(BaseAgent):
         async for event in sub_agent.run_async(ctx):
           yield event
           if event.actions.escalate:
+            if event.content and event.content.parts:
+              for part in event.content.parts:
+                if part.function_response.response:
+                  yield Event(
+                      invocation_id=ctx.invocation_id,
+                      author=sub_agent.name,
+                      branch=ctx.branch,
+                      content=types.Content(
+                          role='assistant',
+                          parts=[
+                              types.Part(
+                                  text=part.function_response.response.get(
+                                      'message'
+                                  ),
+                              )
+                          ],
+                      ),
+                  )
             return
       times_looped += 1
     return
